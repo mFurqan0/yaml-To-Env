@@ -6,7 +6,7 @@ on:
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
-  convert-yaml:
+  convertYaml:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # Required to push changes
@@ -14,8 +14,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false  # Use GITHUB_TOKEN for auth
+        # No additional inputs needed
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -26,13 +25,12 @@ jobs:
         run: pip install PyYAML
 
       - name: Convert YAML to ENV
-        run: python convert_yaml_to_env.py
+        run: python convertYamlToEnv.py
         
-      - name: Convert YAML to ENV
+      - name: Debug output directory
         run: |
-          python convert_yaml_to_env.py
-          echo "Check if CONVERTED_YAML_TO_ENV exists:"
-          ls -la CONVERTED_YAML_TO_ENV/   
+          echo "Contents of convertedYamlToEnv:"
+          ls -la convertedYamlToEnv/   
 
       - name: Commit and push ENV files
         shell: bash
@@ -42,7 +40,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git remote set-url origin "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
-          git add CONVERTED_YAML_TO_ENV/
+          git add convertedYamlToEnv/
           git commit -m "Auto-commit converted ENV files" || echo "No changes to commit"
           git pull --rebase  # Avoid merge conflicts
           git push origin main
