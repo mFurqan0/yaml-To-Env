@@ -2,29 +2,28 @@ import yaml
 import pathlib
 
 def convert_yaml_to_env():
-    # Define the root directory
-    root_dir = pathlib.Path(r"C:\Users\FURQAN\Documents\YAML-to-ENV")      
+    # Define paths (use relative paths for GitHub Actions compatibility)
+    yaml_files_dir = pathlib.Path("YAML_FILES")  # Input YAML files
+    output_env_dir = pathlib.Path("CONVERTED_YAML_TO_ENV")  # Output .env files
     
-    # Define input and output directories
-    yaml_files_dir = root_dir / "YAML_FILES"  # Input YAML files
-    output_env_dir = root_dir / "CONVERTED_YAML_TO_ENV"  # Output .env files
-    
-    # Create output directory if it doesn't exist
+    # Create output directory (force creation if missing)
     output_env_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Created directory: {output_env_dir}")  # Debug line
 
     # Process each YAML file
     for yaml_file in yaml_files_dir.glob("*.yaml"):
         try:
+            print(f"Processing file: {yaml_file}")  # Debug line
             with yaml_file.open('r', encoding='utf-8') as f:
                 configmap = yaml.safe_load(f)
             
             # Extract data section
             data = configmap.get("data", {})
+            print(f"Extracted data: {data}")  # Debug line
             
             # Create .env content
             env_content = []
             for key, value in data.items():
-                # Handle special characters or spaces by wrapping in quotes
                 if any(char in value for char in {' ', '$', '=', '#'}):
                     env_content.append(f'{key}="{value}"')
                 else:

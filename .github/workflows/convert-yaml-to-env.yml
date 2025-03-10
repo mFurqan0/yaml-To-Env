@@ -28,12 +28,11 @@ jobs:
       - name: Convert YAML to ENV
         run: python convert_yaml_to_env.py
         
-      - name: Debug directories
+      - name: Convert YAML to ENV
         run: |
-          echo "YAML_FILES contents:"
-          ls -la YAML_FILES/
-          echo "CONVERTED_YAML_TO_ENV contents:"
-          ls -la CONVERTED_YAML_TO_ENV/    
+          python convert_yaml_to_env.py
+          echo "Check if CONVERTED_YAML_TO_ENV exists:"
+          ls -la CONVERTED_YAML_TO_ENV/   
 
       - name: Commit and push ENV files
         shell: bash
