@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-config
+  namespace: production
+data:
+  API_KEY: "abc$123!XYZ@"
+  DB_PASSWORD: "p@ssw0rd!with#space"
+  URL: "https://api.example.com/v1"

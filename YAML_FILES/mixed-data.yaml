@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mixed-data
+  namespace: development
+data:
+  FEATURE_FLAG: "true"
+  SUPPORT_EMAIL: "support@example.com"
+  MAX_USERS: "1000"
+  SPECIAL_CHARS: "value=with=equals&symbols"
