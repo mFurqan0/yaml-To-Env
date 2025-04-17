@@ -3,18 +3,20 @@ name: Convert YAML to ENV
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # Allow manual triggering
+    paths: ['yamlfiles/*.yaml']  # Only trigger when YAML files change
+  workflow_dispatch:  # Manual trigger option
 
 jobs:
-  convertYaml:
+  convert:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push changes
+      contents: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # No additional inputs needed
+        with:
+          fetch-depth: 0  # Required for proper git history
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -24,23 +26,35 @@ jobs:
       - name: Install dependencies
         run: pip install PyYAML
 
-      - name: Convert YAML to ENV
-        run: python convertYamlToEnv.py
-        
-      - name: Debug output directory
+      - name: Verify input files
         run: |
-          echo "Contents of convertedYamlToEnv:"
-          ls -la convertedYamlToEnv/   
+          echo "YAML files to process:"
+          ls -la yamlfiles/
 
-      - name: Commit and push ENV files
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Auth token
+      - name: Run conversion
+        run: python convert_script.py  # Matches your filename from image
+
+      - name: Verify output
         run: |
+          echo "Generated ENV files:"
+          ls -la ConvertedEnv/
+
+      - name: Commit and push changes
+        if: success()  # Only run if previous steps succeeded
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git remote set-url origin "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
-          git add convertedYamlToEnv/
-          git commit -m "Auto-commit converted ENV files" || echo "No changes to commit"
-          git pull --rebase  # Avoid merge conflicts
-          git push origin main
+          
+          # Check for actual changes
+          if [ -n "$(git status --porcelain ConvertedEnv/)" ]; then
+            git add ConvertedEnv/
+            git commit -m "Auto-update ENV files [$(date +'%Y-%m-%d %H:%M:%S')]"
+            git pull --rebase
+            git push origin main
+          else
+            echo "No changes in ConvertedEnv to commit"
+          fi
